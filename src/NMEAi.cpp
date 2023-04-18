@@ -1,8 +1,8 @@
 /**
  * @author OttoLi (ottoli.pro@gmail.com)
- * @brief 从串口接收NMEA数据，并筛选，只输出$GPGGA、$GPRMC和$WTRTK
- * @version 0.2
- * @date 2023-04-17
+ * @brief 从串口接收NMEA数据，并筛选判断数据包类型，只输出$GPGGA、$GPRMC和$WTRTK
+ * @version 0.3
+ * @date 2023-04-18
  * 
  * @copyright Copyright (c) 2023
  * 
@@ -14,24 +14,35 @@
 #include <termios.h>
 #include <unistd.h>
 
-const std::string NMEA_GGA = "$GPGGA";
-const std::string NMEA_RMC = "$GPRMC";
-const std::string NMEA_WTRTK = "$WTRTK";
 
-bool IsNmeaValid(const std::string& nmea)
-{
+enum NmeaType {
+    NMEA_INVALID,
+    GPGGA,
+    GPRMC,
+    WTRTK
+};
+
+// 筛选NMEA数据包类型，仅接收$GPGGA、$GPRMC和$WTRTK
+NmeaType GetNmeaType(const std::string& nmea) {
     if (nmea.empty() || nmea[nmea.size() - 1] != '\n') {
-        return false;
+        return NMEA_INVALID;
     }
 
-    if (nmea.compare(0, NMEA_GGA.size(), NMEA_GGA) != 0
-        && nmea.compare(0, NMEA_RMC.size(), NMEA_RMC) != 0
-        && nmea.compare(0, NMEA_WTRTK.size(), NMEA_WTRTK) != 0) {
-        return false;
+    if (nmea.compare(0, strlen("$GPGGA"), "$GPGGA") == 0) {
+        return GPGGA;
     }
 
-    return true;
+    if (nmea.compare(0, strlen("$GPRMC"), "$GPRMC") == 0) {
+        return GPRMC;
+    }
+
+    if (nmea.compare(0, strlen("$WTRTK"), "$WTRTK") == 0) {
+        return WTRTK;
+    }
+
+    return NMEA_INVALID;
 }
+
 
 int main()
 {
@@ -61,14 +72,29 @@ int main()
             size_t pos = 0;
             while ((pos = nmea.find('\n')) != std::string::npos) {
                 std::string sentence = nmea.substr(0, pos + 1);
-                if (IsNmeaValid(sentence)) {
+                NmeaType type = GetNmeaType(sentence);
+                if (type != NMEA_INVALID) {
+                    std::cout << "Received ";
+                    switch (type) {
+                        case GPGGA:
+                            std::cout << "GPGGA: ";
+                            break;
+                        case GPRMC:
+                            std::cout << "GPRMC: ";
+                            break;
+                        case WTRTK:
+                            std::cout << "WTRTK: ";
+                            break;
+                        default:
+                            break;
+                    }
                     std::cout << sentence;
                 }
                 nmea.erase(0, pos + 1);
             }
         }
     }
-
+    
     // 关闭串口
     close(fd);
 
