@@ -1,7 +1,7 @@
 /**
  * @author OttoLi (legionz@foxmail.com)
  * @brief 创建WTRTK类，并能够输出可读性强的信息
- * @version 0.4
+ * @version 0.3.1
  * @date 2023-04-18
  * 
  * @copyright Copyright (c) 2023
