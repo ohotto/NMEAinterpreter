@@ -1,5 +1,5 @@
 /**
- * @author OttoLi (legionz@foxmail.com)
+ * @author OttoLi (ottoli.pro@gmail.com)
  * @brief 创建WTRTK类，并能够输出可读性强的信息
  * @version 0.3.1
  * @date 2023-04-18
