@@ -11,6 +11,6 @@
     - 目前仅处理 $GPGGA、$GPRMC 和 $WTRTK
 - [ ] 解析数据包内容，并实现格式化输出
     - [x] 解析 $GPGGA（dev 分支）
-    - [ ] 解析 $GPRMC
+    - [x] 解析 $GPRMC（dev 分支）
     - [x] 解析 $WTRTK（dev 分支）
 - [ ] 保存解析后的数据到 csv 或 txt 文件
