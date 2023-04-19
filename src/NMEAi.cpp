@@ -1,7 +1,7 @@
 /**
  * @author OttoLi (ottoli.pro@gmail.com)
- * @brief 创建GPGGA类，优化构造函数
- * @version 0.3.2
+ * @brief 创建GPRMC类
+ * @version 0.3.3
  * @date 2023-04-19
  * 
  * @copyright Copyright (c) 2023
@@ -28,34 +28,30 @@ NmeaType GetNmeaType(const std::string& nmea) {
     if (nmea.empty() || nmea[nmea.size() - 1] != '\n') {
         return NMEA_INVALID;
     }
-
     if (nmea.compare(0, strlen("$GPGGA"), "$GPGGA") == 0) {
         return GPGGA;
     }
-
     if (nmea.compare(0, strlen("$GPRMC"), "$GPRMC") == 0) {
         return GPRMC;
     }
-
     if (nmea.compare(0, strlen("$WTRTK"), "$WTRTK") == 0) {
         return WTRTK;
     }
-
     return NMEA_INVALID;
 }
 
 class WTRTKData {
     //$WTRTK,x.xx,y.yy,z.zz,r.rr,p.pp,o.oo,w.ww,s,gg,k,q
     private:
-        double diffX_ = 0;              //差分X距离，以米为单位，表示当前位置与差分基准站在东西方向上的距离差
-        double diffY_ = 0;              //差分Y距离，以米为单位，表示当前位置与差分基准站在南北方向上的距离差
-        double diffZ_ = 0;              //差分Z距离，以米为单位，表示当前位置与差分基准站在天线高度方向上的距离差
-        double diffR_ = 0;              //差分R距离，以米为单位，表示当前位置与差分基准站在水平面上的距离差
-        double pitch_ = 0;              //俯仰角，以度为单位，表示当前天线相对于水平面的仰角
-        double roll_ = 0;               //横滚角，以度为单位，表示当前天线相对于水平面的横滚角
-        double heading_ = 0;            //航向角，以度为单位，表示当前方向与正北方向之间的夹角
+        double diffX_ = 0;                   //差分X距离，以米为单位，表示当前位置与差分基准站在东西方向上的距离差
+        double diffY_ = 0;                   //差分Y距离，以米为单位，表示当前位置与差分基准站在南北方向上的距离差
+        double diffZ_ = 0;                   //差分Z距离，以米为单位，表示当前位置与差分基准站在天线高度方向上的距离差
+        double diffR_ = 0;                   //差分R距离，以米为单位，表示当前位置与差分基准站在水平面上的距离差
+        double pitch_ = 0;                   //俯仰角，以度为单位，表示当前天线相对于水平面的仰角
+        double roll_ = 0;                    //横滚角，以度为单位，表示当前天线相对于水平面的横滚角
+        double heading_ = 0;                 //航向角，以度为单位，表示当前方向与正北方向之间的夹角
         std::string locState_ = "NULL";      //移动站定位状态，表示当前移动站的定位状态
-        int fourGState_ = 0;            //4G状态flag
+        int fourGState_ = 0;                 //4G状态flag
         std::string fourGState__ = "NULL";   //4G状态，表示当前4G网络连接状态
         std::string fixBaseState_ = "NULL";  //固定基站状态，表示当前是否选择了固定基站
         //int fourGQuality_;
@@ -76,8 +72,7 @@ class WTRTKData {
             }
             
             // 解析字段
-            //if (tokens.size() >= 11) {
-            if (tokens.size() >= 10) {
+            if (tokens.size() >= 11) {
                 if(tokens[1] != "")
                 diffX_ = std::stod(tokens[1]);
                 if(tokens[2] != "")
@@ -282,6 +277,117 @@ class GPGGAData {
         }
 };
 
+class GPRMCData {
+    //$GPRMC,144326.00,A,5107.0017737,N,11402.3291611,W,0.080,323.3,210307,0.0,E,A*20
+    private:
+        std::string time = "NULL";                      // UTC时间，hhmmss（时分秒）格式
+        std::string status = "NULL";                    // 定位状态，A：有效定位，V：无效定位
+        double latitude = 0;                            // 纬度ddmm.mmmm（度分）格式（前面的0也将被传输）
+        std::string ns = "NULL";                        // 纬度半球，N：北半球，S：南半球
+        double longitude = 0;                           // 经度dddmm.mmmm（度分）格式（前面的0也将被传输）
+        std::string ew = "NULL";                        // 经度半球，E：东经，W：西经
+        double speed = 0;                               // 地面速率（000.0~999.9节，前面的0也将被传输）
+        double heading = 0;                             // 地面航向（000.0~359.9度，以真北为参考基准，前面的0也将被传输）
+        std::string date = "NULL";                      // UTC日期, ddmmyy（日月年）格式
+        double declination = 0;                         // 磁偏角（000.0~180.0度，前面的0也将被传输）
+        std::string declinationDirection = "NULL";      // 磁偏角方向，E：东，W：西
+        std::string mode = "NULL";                      // 模式指示，A：自主定位，D：差分，E：估算，N：数据无效
+        int checksum = 0;                  // 校验值
+
+    public:
+        GPRMCData(std::string sentence) {
+            // 将 GPGGA 数据包按逗号分割为一个字符串向量
+            std::vector<std::string> tokens;
+            std::string token;
+            std::stringstream ss(sentence);
+            while (std::getline(ss, token, ',')) {
+                // 检查是否包含回车符或换行符
+                if (token.find("\r\n") != std::string::npos) {
+                    // 如果包含，则删除回车符和换行符
+                    token.erase(token.find("\r\n"), 2);
+                }
+                tokens.push_back(token);
+            }
+
+            // 解析并存储各个参数
+            //statement_id = tokens[0];
+            if (tokens.size() >= 12) {
+                if (tokens[1] != "")
+                time = tokens[1];
+                if (tokens[2] != ""){
+                    if (tokens[2] == "A") {
+                        status = "有效定位";
+                    }
+                    else if(tokens[2] == "V"){
+                        status = "无效定位";
+                    }
+                    else
+                        status = "未知状态";
+                }
+                if (tokens[3] != "")
+                latitude = std::stod(tokens[3]);
+                if (tokens[4] != "")
+                ns = tokens[4];
+                if (tokens[5] != "")
+                longitude = std::stod(tokens[5]);
+                if (tokens[6] != "")
+                ew = tokens[6];
+                if (tokens[7] != "")
+                speed = std::stod(tokens[7]);
+                if (tokens[8] != "")
+                heading = std::stod(tokens[8]);
+                if (tokens[9] != "")
+                date = tokens[9];
+                if (tokens[10] != "")
+                declination = std::stod(tokens[10]);
+                if (tokens[11] != ""){
+                    if (tokens[11] == "E") {
+                        declinationDirection = "东";
+                    }
+                    else if(tokens[11] == "W"){
+                        declinationDirection = "西";
+                    }
+                    else
+                        declinationDirection = "未知方向";
+                }
+                //token[12] = A*20
+                if (tokens[12] != ""){
+                    int pos = tokens[12].find('*');
+                    std::string str1 = tokens[12].substr(0, pos);
+                    std::string str2 = tokens[12].substr(pos+1, tokens[12].length()-pos-1);
+                    if (str1 == "A") {
+                        mode = "自主定位";
+                    }
+                    else if(str1 == "D"){
+                        mode = "差分";
+                    }
+                    else if(str1 == "E"){
+                        mode = "估算";
+                    }
+                    else if(str1 == "N"){
+                        mode = "数据无效";
+                    }
+                    else
+                        mode = "未知模式";
+                    checksum = std::stoi(str2,0,16);
+                }
+            }
+        }
+
+        void PrintData(){
+            std::cout << "UTC时间: " << time << std::endl;
+            std::cout << "定位状态: " << status << std::endl;
+            std::cout << "纬度: " << latitude << ns << std::endl;
+            std::cout << "经度: " << longitude << ew << std::endl;
+            std::cout << "地面速率: " << speed << "节" << std::endl;
+            std::cout << "地面航向: " << heading << "度" << std::endl;
+            std::cout << "UTC时间: " << date << std::endl;
+            std::cout << "磁偏角: " << declination << "度" << declinationDirection << std::endl;
+            std::cout << "模式指示: " << mode << std::endl;
+            std::cout << "校验值: " << checksum << std::endl;
+        }
+};
+
 int main()
 {
     int fd = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NDELAY);
@@ -319,9 +425,11 @@ int main()
                             gga.PrintData();
                             break;
                         }
-                        case GPRMC:
-                            std::cout << "GPRMC: ";
+                        case GPRMC: {
+                            GPRMCData rmc(sentence);
+                            rmc.PrintData();
                             break;
+                        }
                         case WTRTK: {
                             WTRTKData wtdata(sentence);
                             wtdata.PrintData();
