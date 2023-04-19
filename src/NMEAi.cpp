@@ -1,7 +1,7 @@
 /**
  * @author OttoLi (ottoli.pro@gmail.com)
- * @brief 创建GPRMC类
- * @version 0.3.3
+ * @brief 已创建GPGGA、GPRMC、WTRTK类，并实现解析和输出
+ * @version 0.4
  * @date 2023-04-19
  * 
  * @copyright Copyright (c) 2023
