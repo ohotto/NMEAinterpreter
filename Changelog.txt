@@ -1,4 +1,7 @@
-v0.3.1
+v0.3.2 - dev
+创建GPGGA类，优化构造函数
+
+v0.3.1 - dev
 添加类 WTRTKData 实现 WTRTK 的解析和输出
 
 v0.3

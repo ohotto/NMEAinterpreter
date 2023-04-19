@@ -1,8 +1,8 @@
 /**
  * @author OttoLi (ottoli.pro@gmail.com)
- * @brief 创建WTRTK类，并能够输出可读性强的信息
- * @version 0.3.1
- * @date 2023-04-18
+ * @brief 创建GPGGA类，优化构造函数
+ * @version 0.3.2
+ * @date 2023-04-19
  * 
  * @copyright Copyright (c) 2023
  * 
@@ -47,17 +47,17 @@ NmeaType GetNmeaType(const std::string& nmea) {
 class WTRTKData {
     //$WTRTK,x.xx,y.yy,z.zz,r.rr,p.pp,o.oo,w.ww,s,gg,k,q
     private:
-        double diffX_;              //差分X距离，以米为单位，表示当前位置与差分基准站在东西方向上的距离差
-        double diffY_;              //差分Y距离，以米为单位，表示当前位置与差分基准站在南北方向上的距离差
-        double diffZ_;              //差分Z距离，以米为单位，表示当前位置与差分基准站在天线高度方向上的距离差
-        double diffR_;              //差分R距离，以米为单位，表示当前位置与差分基准站在水平面上的距离差
-        double pitch_;              //俯仰角，以度为单位，表示当前天线相对于水平面的仰角
-        double roll_;               //横滚角，以度为单位，表示当前天线相对于水平面的横滚角
-        double heading_;            //航向角，以度为单位，表示当前方向与正北方向之间的夹角
-        std::string locState_;      //移动站定位状态，表示当前移动站的定位状态
-        int fourGState_;            //4G状态flag
-        std::string fourGState__;   //4G状态，表示当前4G网络连接状态
-        std::string fixBaseState_;  //固定基站状态，表示当前是否选择了固定基站
+        double diffX_ = 0;              //差分X距离，以米为单位，表示当前位置与差分基准站在东西方向上的距离差
+        double diffY_ = 0;              //差分Y距离，以米为单位，表示当前位置与差分基准站在南北方向上的距离差
+        double diffZ_ = 0;              //差分Z距离，以米为单位，表示当前位置与差分基准站在天线高度方向上的距离差
+        double diffR_ = 0;              //差分R距离，以米为单位，表示当前位置与差分基准站在水平面上的距离差
+        double pitch_ = 0;              //俯仰角，以度为单位，表示当前天线相对于水平面的仰角
+        double roll_ = 0;               //横滚角，以度为单位，表示当前天线相对于水平面的横滚角
+        double heading_ = 0;            //航向角，以度为单位，表示当前方向与正北方向之间的夹角
+        std::string locState_ = "NULL";      //移动站定位状态，表示当前移动站的定位状态
+        int fourGState_ = 0;            //4G状态flag
+        std::string fourGState__ = "NULL";   //4G状态，表示当前4G网络连接状态
+        std::string fixBaseState_ = "NULL";  //固定基站状态，表示当前是否选择了固定基站
         //int fourGQuality_;
         
     public:
@@ -78,13 +78,21 @@ class WTRTKData {
             // 解析字段
             //if (tokens.size() >= 11) {
             if (tokens.size() >= 10) {
+                if(tokens[1] != "")
                 diffX_ = std::stod(tokens[1]);
+                if(tokens[2] != "")
                 diffY_ = std::stod(tokens[2]);
+                if(tokens[3] != "")
                 diffZ_ = std::stod(tokens[3]);
+                if(tokens[4] != "")
                 diffR_ = std::stod(tokens[4]);
+                if(tokens[5] != "")
                 pitch_ = std::stod(tokens[5]);
+                if(tokens[6] != "")
                 roll_ = std::stod(tokens[6]);
+                if(tokens[7] != "")
                 heading_ = std::stod(tokens[7]);
+                if(tokens[8] != "")
                 switch (std::stoi(tokens[8])) {
                     case 0:
                         locState_ = "初始化";
@@ -105,6 +113,7 @@ class WTRTKData {
                         locState_ = "未知状态";
                         break;
                 }
+                if(tokens[9] != "")
                 fourGState_ = std::stoi(tokens[9]);
                 if(fourGState_ >= 0 && fourGState_ < 14){
                     fourGState__ = "4G连接中";
@@ -115,6 +124,7 @@ class WTRTKData {
                 }else{
                     fourGState__ = "未知状态";
                 }
+                if(tokens[10] != "")
                 switch (std::stoi(tokens[10])) {
                     case -1:
                         fixBaseState_ = "选择固定基站失败";
@@ -129,6 +139,7 @@ class WTRTKData {
                         fixBaseState_ = "未知状态";
                         break;
                 }
+                //if(tokens[11] != "")
                 //fourGQuality_ = std::stoi(tokens[11]);
             }
         }
@@ -145,6 +156,129 @@ class WTRTKData {
             std::cout << "4G状态：" << fourGState__ << std::endl;
             std::cout << "固定基站状态：" << fixBaseState_ << std::endl;
             //std::cout << "4G信号质量：" << fourGQuality_ << std::endl;
+        }
+};
+
+class GPGGAData {
+    //$GPGGA,hhmmss.sss,ddmm.mmmm,N/S,dddmm.mmmm,E/W,quality,satellites,HDOP,altitude,altitude_units,geoid_height,geoid_height_units,differential_age,differential_ref_station_id,checksum
+    private:
+        std::string utc_time = "NULL";                       // UTC时间（hhmmss.sss）
+        double latitude = 0;                                 // 纬度（ddmm.mmmm）
+        std::string latitude_direction = "NULL";             // 纬度方向（N/S）
+        double longitude = 0;                                // 经度（dddmm.mmmm）
+        std::string longitude_direction = "NULL";            // 经度方向（E/W）
+        std::string quality_ = "NULL";                       // GPS状态|0=未定位|1=单点定位|2=伪距/SBAS|3=无效PPS|4=RTK固定|5=RTK浮动|6=正在估算|7=手动启动基准站|8=RTK宽巷解|9=伪距（诺瓦泰615）
+        int satellites = 0;                                  // 正在使用的卫星数量（00-12）
+        double hdop = 0;                                     // HDOP水平精度因子（0.5-99.9）
+        double altitude = 0;                                 // 海拔高度（-9999.9-99999.9）
+        std::string altitude_units = "NULL";                 // 高度单位
+        double geoid_height = 0;                             // 大地水准面相对椭球面的高度
+        std::string geoid_height_units = "NULL";             // 大地水准面高度单位
+        double differential_age = 0;                         // 差分时间
+        std::string differential_ref_station_id = "NULL";    // 差分基准站ID
+        int checksum = 0;                                    // 校验值
+
+    public:
+        GPGGAData(std::string sentence) {
+            // 将 GPGGA 数据包按逗号分割为一个字符串向量
+            std::vector<std::string> tokens;
+            std::string token;
+            std::stringstream ss(sentence);
+            while (std::getline(ss, token, ',')) {
+                // 检查是否包含回车符或换行符
+                if (token.find("\r\n") != std::string::npos) {
+                    // 如果包含，则删除回车符和换行符
+                    token.erase(token.find("\r\n"), 2);
+                }
+                tokens.push_back(token);
+            }
+
+            // 解析并存储各个参数
+            //statement_id = tokens[0];
+            if (tokens.size() >= 15) {
+                if (tokens[1] != "")
+                utc_time = tokens[1];
+                if (tokens[2] != "")
+                latitude = std::stod(tokens[2]);
+                if (tokens[3] != "")
+                latitude_direction = tokens[3];
+                if (tokens[4] != "")
+                longitude = std::stod(tokens[4]);
+                if (tokens[5] != "")
+                longitude_direction = tokens[5];
+                if (tokens[6] != "")
+                switch (std::stoi(tokens[6])) {
+                    case 0:
+                        quality_ = "未定位";
+                        break;
+                    case 1:
+                        quality_ = "单点定位";
+                        break;
+                    case 2:
+                        quality_ = "伪距/SBAS";
+                        break;
+                    case 3:
+                        quality_ = "无效PPS";
+                        break;
+                    case 4:
+                        quality_ = "RTK固定";
+                        break;
+                    case 5:
+                        quality_ = "RTK浮动";
+                        break;
+                    case 6:
+                        quality_ = "正在估算";
+                        break;
+                    case 7:
+                        quality_ = "手动启动基准站";
+                        break;
+                    case 8:
+                        quality_ = "RTK宽巷解";
+                        break;
+                    case 9:
+                        quality_ = "伪距（诺瓦泰615）";
+                        break;
+                    default:
+                        quality_ = "未知状态";
+                        break;
+                }
+                if (tokens[7] != "")
+                    satellites = std::stoi(tokens[7]);
+                if (tokens[8] != "")
+                    hdop = std::stod(tokens[8]);
+                if (tokens[9] != "")
+                    altitude = std::stod(tokens[9]);
+                if (tokens[10] != "")
+                    altitude_units = tokens[10];
+                if (tokens[11] != "")
+                    geoid_height = std::stod(tokens[11]);
+                if (tokens[12] != "")
+                    geoid_height_units = tokens[12];
+                if (tokens[13] != "")
+                    differential_age = std::stod(tokens[13]);
+                //token[14] = 0000*1F
+                if (tokens[14] != ""){
+                    int pos = tokens[14].find('*');
+                    std::string str1 = tokens[14].substr(0, pos);
+                    std::string str2 = tokens[14].substr(pos+1, tokens[14].length()-pos-1);
+                    differential_ref_station_id = str1;
+                    checksum = std::stoi(str2,0,16);
+                }
+            }
+        }
+
+        void PrintData(){
+            std::cout << "UTC时间: " << utc_time << std::endl;
+            std::cout << "纬度: " << latitude << latitude_direction << std::endl;
+            std::cout << "经度: " << longitude << longitude_direction << std::endl;
+            std::cout << "GPS状态: " << quality_ << std::endl;
+            std::cout << "正在使用的卫星数量: " << satellites << std::endl;
+            std::cout << "HDOP水平精度因子: " << hdop << std::endl;
+            std::cout << "海拔高度: " << altitude << altitude_units << std::endl;
+            std::cout << "大地水准面相对椭球面的高度: " << geoid_height << geoid_height_units << std::endl;
+            std::cout << "差分时间: " << differential_age << std::endl;
+            std::cout << "差分基准站ID: " << differential_ref_station_id << std::endl;
+            std::cout << "校验值: " << checksum << std::endl;
         }
 };
 
@@ -180,9 +314,11 @@ int main()
                 if (type != NMEA_INVALID) {
                     std::cout << "\nReceived\n";
                     switch (type) {
-                        case GPGGA:
-                            std::cout << "GPGGA: ";
+                        case GPGGA: {
+                            GPGGAData gga(sentence);
+                            gga.PrintData();
                             break;
+                        }
                         case GPRMC:
                             std::cout << "GPRMC: ";
                             break;
