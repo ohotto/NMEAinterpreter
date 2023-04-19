@@ -1,4 +1,4 @@
-v0.4
+v0.4（v0.3.3_dev）
 已创建GPGGA、GPRMC、WTRTK类，并实现解析和输出
 
 v0.3.3 - dev
