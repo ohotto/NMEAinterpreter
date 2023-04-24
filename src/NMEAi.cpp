@@ -1,8 +1,8 @@
 /**
  * @author OttoLi (ottoli.pro@gmail.com)
- * @brief 创建GPRMC类
- * @version 0.3.3
- * @date 2023-04-19
+ * @brief 加入对 BD（北斗）GA—（伽利略）GL—（格洛纳斯）GN——GNSS 的支持
+ * @version 0.4.1
+ * @date 2023-04-24
  * 
  * @copyright Copyright (c) 2023
  * 
@@ -18,21 +18,45 @@
 
 enum NmeaType {
     NMEA_INVALID,
-    GPGGA,
-    GPRMC,
+    GGA,
+    RMC,
     WTRTK
 };
 
-// 筛选NMEA数据包类型，仅接收$GPGGA、$GPRMC和$WTRTK
+// 筛选NMEA数据包类型，仅接收$GGA、$RMC和$WTRTK
 NmeaType GetNmeaType(const std::string& nmea) {
     if (nmea.empty() || nmea[nmea.size() - 1] != '\n') {
         return NMEA_INVALID;
     }
     if (nmea.compare(0, strlen("$GPGGA"), "$GPGGA") == 0) {
-        return GPGGA;
+        return GGA;
+    }
+    if (nmea.compare(0, strlen("$BDGGA"), "$BDGGA") == 0) {
+        return GGA;
+    }
+    if (nmea.compare(0, strlen("$GAGGA"), "$GAGGA") == 0) {
+        return GGA;
+    }
+    if (nmea.compare(0, strlen("$GLGGA"), "$GLGGA") == 0) {
+        return GGA;
+    }
+    if (nmea.compare(0, strlen("$GNGGA"), "$GNGGA") == 0) {
+        return GGA;
     }
     if (nmea.compare(0, strlen("$GPRMC"), "$GPRMC") == 0) {
-        return GPRMC;
+        return RMC;
+    }
+    if (nmea.compare(0, strlen("$BDGGA"), "$BDGGA") == 0) {
+        return RMC;
+    }
+    if (nmea.compare(0, strlen("$GAGGA"), "$GAGGA") == 0) {
+        return RMC;
+    }
+    if (nmea.compare(0, strlen("$GLGGA"), "$GLGGA") == 0) {
+        return RMC;
+    }
+    if (nmea.compare(0, strlen("$GNGGA"), "$GNGGA") == 0) {
+        return RMC;
     }
     if (nmea.compare(0, strlen("$WTRTK"), "$WTRTK") == 0) {
         return WTRTK;
@@ -154,8 +178,8 @@ class WTRTKData {
         }
 };
 
-class GPGGAData {
-    //$GPGGA,hhmmss.sss,ddmm.mmmm,N/S,dddmm.mmmm,E/W,quality,satellites,HDOP,altitude,altitude_units,geoid_height,geoid_height_units,differential_age,differential_ref_station_id,checksum
+class GGAData {
+    //$GGA,hhmmss.sss,ddmm.mmmm,N/S,dddmm.mmmm,E/W,quality,satellites,HDOP,altitude,altitude_units,geoid_height,geoid_height_units,differential_age,differential_ref_station_id,checksum
     private:
         std::string utc_time = "NULL";                       // UTC时间（hhmmss.sss）
         double latitude = 0;                                 // 纬度（ddmm.mmmm）
@@ -174,8 +198,8 @@ class GPGGAData {
         int checksum = 0;                                    // 校验值
 
     public:
-        GPGGAData(std::string sentence) {
-            // 将 GPGGA 数据包按逗号分割为一个字符串向量
+        GGAData(std::string sentence) {
+            // 将 GGA 数据包按逗号分割为一个字符串向量
             std::vector<std::string> tokens;
             std::string token;
             std::stringstream ss(sentence);
@@ -277,8 +301,8 @@ class GPGGAData {
         }
 };
 
-class GPRMCData {
-    //$GPRMC,144326.00,A,5107.0017737,N,11402.3291611,W,0.080,323.3,210307,0.0,E,A*20
+class RMCData {
+    //$RMC,144326.00,A,5107.0017737,N,11402.3291611,W,0.080,323.3,210307,0.0,E,A*20
     private:
         std::string time = "NULL";                      // UTC时间，hhmmss（时分秒）格式
         std::string status = "NULL";                    // 定位状态，A：有效定位，V：无效定位
@@ -295,8 +319,8 @@ class GPRMCData {
         int checksum = 0;                  // 校验值
 
     public:
-        GPRMCData(std::string sentence) {
-            // 将 GPGGA 数据包按逗号分割为一个字符串向量
+        RMCData(std::string sentence) {
+            // 将 GGA 数据包按逗号分割为一个字符串向量
             std::vector<std::string> tokens;
             std::string token;
             std::stringstream ss(sentence);
@@ -420,13 +444,13 @@ int main()
                 if (type != NMEA_INVALID) {
                     std::cout << "\nReceived\n";
                     switch (type) {
-                        case GPGGA: {
-                            GPGGAData gga(sentence);
+                        case GGA: {
+                            GGAData gga(sentence);
                             gga.PrintData();
                             break;
                         }
-                        case GPRMC: {
-                            GPRMCData rmc(sentence);
+                        case RMC: {
+                            RMCData rmc(sentence);
                             rmc.PrintData();
                             break;
                         }
