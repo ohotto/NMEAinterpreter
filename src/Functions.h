@@ -13,7 +13,7 @@
 #include <ctime>
 #include <iomanip>
 #include <sstream>
-#include <string>
+#include <cstring>
 
 //返回yymmdd_hhmmss格式的当前日期时间
 std::string getCurrentDateTime();
