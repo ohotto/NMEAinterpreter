@@ -1,3 +1,6 @@
+v0.4.2 - dev
+函数和类分文件，添加CMakeLists
+
 v0.4.1 - dev
 加入对 BD（北斗）GA—（伽利略）GL—（格洛纳斯）GN——GNSS 的支持
 
