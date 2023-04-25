@@ -1,16 +1,16 @@
-v0.4.2 - dev
+v0.4.2_dev
 函数和类分文件，添加CMakeLists
 
-v0.4.1 - dev
+v0.4.1_dev
 加入对 BD（北斗）GA—（伽利略）GL—（格洛纳斯）GN——GNSS 的支持
 
-v0.3.3 - dev
+v0.3.3_dev (v0.4)
 创建GPRMC类
 
-v0.3.2 - dev
+v0.3.2_dev
 创建GPGGA类，优化构造函数
 
-v0.3.1 - dev
+v0.3.1_dev
 添加类 WTRTKData 实现 WTRTK 的解析和输出
 
 v0.3
