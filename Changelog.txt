@@ -4,6 +4,9 @@ v0.4.2_dev
 v0.4.1_dev
 加入对 BD（北斗）GA—（伽利略）GL—（格洛纳斯）GN——GNSS 的支持
 
+v0.4 (v0.3.3_dev)s
+已创建GPGGA、GPRMC、WTRTK类，并实现解析和输出
+
 v0.3.3_dev (v0.4)
 创建GPRMC类
 
